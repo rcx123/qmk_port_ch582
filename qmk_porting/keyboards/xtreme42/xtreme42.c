@@ -43,19 +43,22 @@ led_config_t g_led_config = { {
 
 
 /* clang-format on */
-void rgb_matrix_indicators_kb(void) {
-    HSV hsv = {0, 255, rgb_matrix_get_val()};
-    RGB rgb = hsv_to_rgb(hsv);
-    switch(biton32(layer_state)) {
-        case 1: rgb_matrix_set_color(1, rgb.r, rgb.g, rgb.b); break;
-        case 2: rgb_matrix_set_color(2, rgb.r, rgb.g, rgb.b); break;
-        case 3: rgb_matrix_set_color(3, rgb.r, rgb.g, rgb.b); break;
-        case 4: rgb_matrix_set_color(4, rgb.r, rgb.g, rgb.b); break;
-        case 5: rgb_matrix_set_color(5, rgb.r, rgb.g, rgb.b); break;
-        case 6: rgb_matrix_set_color(6, rgb.r, rgb.g, rgb.b); break;
-        default: break;
+bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max)
+{
+    if (!rgb_matrix_indicators_advanced_user(led_min, led_max)) {
+        return false;
     }
+    if (led_min <= 0 && led_max > 0 && host_keyboard_led_state().num_lock) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(0, 0xFF, 0x00, 0x00);
+    }
+#if defined BATTERY_MEASURE_PIN || defined BLE_ENABLE
+    extern void wireless_rgb_indicator_task(uint8_t led_min, uint8_t led_max);
+
+    wireless_rgb_indicator_task(led_min, led_max);
+#endif
+    return true;
 }
+#endif
 
 #endif
 
